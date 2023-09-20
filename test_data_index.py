@@ -8,7 +8,7 @@ BASE_PATH = current_dir + GPCR
 embedding_size = 21
 embeddings = [[0] * embedding_size]
 char_ix = {'#PADDING#': 0}
-sequences_num = {"GPCR": 7106}
+sequences_num = {"GPCR": 832}
 class_num = {"GPCR": 86}
 
 with open('embeddings.21', 'r') as file:
