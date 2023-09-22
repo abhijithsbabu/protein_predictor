@@ -1,6 +1,5 @@
 #not completely debugged
 
-import os
 import time
 import pickle
 import numpy as np
@@ -9,20 +8,18 @@ from keras.utils import plot_model
 from keras.models import Model, load_model
 from keras.layers import Input
 from keras.layers import Flatten, concatenate,add, Embedding
-from keras.layers import Dense, Activation, Dropout
+from keras.layers import Dense, Dropout
 from keras.optimizers import Adam
 from keras import regularizers
-from keras import initializers
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import MaxPooling1D
-from keras.metrics import categorical_crossentropy
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from inspect import signature
 import matplotlib
 
 matplotlib.use("Agg")
-from sklearn.metrics import classification_report, precision_score, roc_auc_score, f1_score, recall_score, precision_recall_curve, average_precision_score, matthews_corrcoef, balanced_accuracy_score
+from sklearn.metrics import classification_report, precision_recall_curve, average_precision_score, matthews_corrcoef, balanced_accuracy_score
 
 seed = 333
 np.random.seed(seed)
@@ -34,11 +31,9 @@ GPCR_all_train_labels = np.load('GPCR_all_train_labels.npy')
 labels_train= GPCR_all_train_labels
 print('Shape of train output tensor: ', labels_train.shape)
 
-
-
 with open('GPCR_all_test_sequences.pkl', "rb") as fp_seq:
     X_test = pickle.load(fp_seq)
-print('Shape of test input tensor: ', X_train.shape)
+print('Shape of test input tensor: ', X_test.shape)
 
 GPCR_all_test_labels = np.load('GPCR_all_test_labels.npy')
 labels_test= GPCR_all_test_labels
@@ -92,7 +87,7 @@ model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.0005), metric
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)
 mc = ModelCheckpoint('best_model_deepPff.h5', monitor='val_accuracy', mode='max', verbose=1, save_best_only=True)
 
-history = model.fit(X_train, labels_train, validation_data=(X_test, labels_test), batch_size=100, epochs=20, verbose=1,
+history = model.fit(X_train, labels_train, validation_data=(X_test, labels_test), batch_size=300, epochs=1, verbose=1,
                     callbacks=[es, mc])
 
 saved_model = load_model('best_model_deepPff.h5')
@@ -103,20 +98,15 @@ _, test_acc = saved_model.evaluate(X_test, labels_test, verbose=0)
 print('Train Acc: %.3f, Test Acc: %.3f' % (train_acc * 100, test_acc * 100))  # Present results
 
 start_time = time.time() #Prediction start time
-# evaluate the network
+
 print("[INFO] evaluating network...")
 predictions = saved_model.predict(X_test)
 print(classification_report(labels_test.argmax(axis=1),predictions.argmax(axis=1), digits=5)) #Summarizes precision, recall, f1 score
 
-#precision_val =precision_score(labels_test.argmax(axis=1), predictions.argmax(axis=1), average='macro')
-#f1_val = f1_score(labels_test.argmax(axis=1),predictions.argmax(axis=1), average='macro')
-#recall_val = recall_score(labels_test.argmax(axis=1),predictions.argmax(axis=1), average='macro')
 mcc_val = matthews_corrcoef(labels_test.argmax(axis=1), predictions.argmax(axis=1))
 bacc_val = balanced_accuracy_score(labels_test.argmax(axis=1), predictions.argmax(axis=1), adjusted=True) #Defaul, adjusted=False
 
-#print("macro-precision = %.5f" % (precision_val* 100))
-#print("macro-recall = %.5f" % (recall_val* 100))
-#print("macro-f1 = %.5f" % (f1_val* 100))
+
 print("mathew's correlation coefficient = %.5f" % (mcc_val))
 print("Balanced Accuracy = %.5f" % (bacc_val))
 
@@ -155,7 +145,6 @@ for i in range(n_classes):
                                                         predictions[:, i])
     average_precision[i] = average_precision_score(labels_test[:, i], predictions[:, i])
 
-# A "micro-average": quantifying score on all classes jointly
 precision["micro"], recall["micro"], _ = precision_recall_curve(labels_test.ravel(),
     predictions.ravel())
 average_precision["micro"] = average_precision_score(labels_test, predictions,
@@ -171,8 +160,6 @@ step_kwargs = ({'step': 'post'}
 plt.figure()
 plt.step(recall['micro'], precision['micro'], color='b', alpha=0.2,
          where='post')
-#plt.fill_between(recall["micro"], precision["micro"], alpha=0.2, color='b',
-                 #**step_kwargs)
 
 plt.xlabel('Recall')
 plt.ylabel('Precision')
