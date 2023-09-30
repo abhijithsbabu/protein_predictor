@@ -45,7 +45,6 @@ print(loaded_matrix[0])
 print(len(loaded_matrix[1]))
 print(len(loaded_matrix[2]))
 
-input()
 embedding_layer = Embedding(len(loaded_matrix[1][0]), len(loaded_matrix[1][0][0]), weights=[loaded_matrix[1][0]], input_length=MAX_SEQUENCE_LENGTH, trainable=True)
 sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 embedded_sequences = embedding_layer(sequence_input)
@@ -77,7 +76,7 @@ model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.0005), metric
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)
 mc = ModelCheckpoint('best_model_deepPff.h5', monitor='val_accuracy', mode='max', verbose=1, save_best_only=True)
 
-history = model.fit(x_train, labels_train, validation_data=(x_test, labels_test), batch_size=30, epochs=1, verbose=1,
+history = model.fit(x_train, labels_train, validation_data=(x_test, labels_test), batch_size=100, epochs=20, verbose=1,
                     callbacks=[es, mc])
 
 saved_model = load_model('best_model_deepPff.h5')
