@@ -46,7 +46,7 @@ print(len(loaded_matrix[1]))
 print(len(loaded_matrix[2]))
 
 input()
-embedding_layer = Embedding(len(embedding_matrix), EMBEDDING_DIM, weights=[loaded_matrix], input_length=MAX_SEQUENCE_LENGTH, trainable=True)
+embedding_layer = Embedding(len(loaded_matrix[1][0]), len(loaded_matrix[1][0][0]), weights=[loaded_matrix[1][0]], input_length=MAX_SEQUENCE_LENGTH, trainable=True)
 sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 embedded_sequences = embedding_layer(sequence_input)
 conv1 = Conv1D(250, kernel_size=20, kernel_initializer='glorot_uniform', activation='relu')(embedded_sequences)
